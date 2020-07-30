@@ -1,0 +1,15 @@
+[package]
+name = "mdbook-auto-gen-book-summary"
+version = "0.1.0"
+authors = ["George"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "2.33.1"
+mdbook = "0.4.1"
+anyhow = "1.0.28"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
