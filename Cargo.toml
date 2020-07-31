@@ -3,11 +3,11 @@ name = "mdbook-auto-gen-summary"
 version = "0.1.0"
 authors = ["George"]
 edition = "2018"
-description = "A short description of my package"
+description = "A preprocessor and cli tool for mdbook to auto generate summary."
 license = "MIT"
-documentation = "https://docs.rs/bitflags"
-homepage = "https://serde.rs/"
-repository = "https://github.com/rust-lang/cargo/"
+documentation = "https://crates.io/crates/mdbook-auto-gen-summary"
+homepage = "https://crates.io/crates/mdbook-auto-gen-summary"
+repository = "https://github.com/knightflower1989/mdbook-auto-gen-summary"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

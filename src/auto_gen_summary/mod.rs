@@ -50,12 +50,6 @@ impl Preprocessor for AutoGenSummary {
             .to_str()
             .unwrap()
             .to_string();
-        // let g = walk_dir((source_dir.clone() + "/").as_str());
-        // let list = gen_summary((source_dir.clone() + "/").as_str(), &g);
-        // let buf: String = list.join("\n");
-        // let mut f = std::fs::File::create(source_dir.clone() + "/SUMMARY.md").unwrap();
-        // let mut writer = BufWriter::new(f);
-        // writer.write(buf.as_bytes());
 
         gen_summary(&source_dir);
 
@@ -97,8 +91,6 @@ pub fn gen_summary_lines(root_dir: &str, group: &MdGroup) -> Vec<String> {
     let mut lines: Vec<String> = vec![];
 
     let path = group.path.replace(root_dir, "");
-    // let sl: Vec<&str> = path.split("/").collect();
-    // let cnt = sl.len();
     let cnt = count(&path);
 
     let buff_spaces = String::from(" ".repeat(4 * (cnt - 1)));
@@ -131,8 +123,7 @@ pub fn gen_summary_lines(root_dir: &str, group: &MdGroup) -> Vec<String> {
         if path.ends_with("README.md") {
             continue;
         }
-        // let sl: Vec<&str> = path.split("/").collect();
-        // let cnt = sl.len();
+
         let cnt = count(&path);
         let buff_spaces = String::from(" ".repeat(4 * (cnt - 1)));
         let buff_link = format!("{}* [{}]({})", buff_spaces, md.name, path);

@@ -5,7 +5,6 @@ use clap::{App, Arg, ArgMatches, SubCommand};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
 use std::io;
-// use std::io::prelude::*;
 use std::process;
 
 pub fn make_app() -> App<'static, 'static> {
@@ -36,13 +35,7 @@ fn main() {
             .value_of("dir")
             .expect("Required argument")
             .to_string();
-        // println!("{:?}", source_dir);
-        // let g = auto_gen_summary::walk_dir((source_dir.clone() + "/").as_str());
-        // let list = auto_gen_summary::gen_summary((source_dir.clone() + "/").as_str(), &g);
-        // let buf: String = list.join("\n");
-        // let mut f = std::fs::File::create(source_dir.clone() + "/SUMMARY.md").unwrap();
-        // let mut writer = BufWriter::new(f);
-        // writer.write(buf.as_bytes());
+
         auto_gen_summary::gen_summary(&source_dir);
     } else if let Err(e) = handle_preprocessing(&preprocessor) {
         eprintln!("{}", e);
@@ -54,8 +47,6 @@ fn handle_preprocessing(pre: &dyn Preprocessor) -> Result<(), Error> {
     let (ctx, book) = CmdPreprocessor::parse_input(io::stdin())?;
 
     if ctx.mdbook_version != mdbook::MDBOOK_VERSION {
-        // We should probably use the `semver` crate to check compatibility
-        // here...
         eprintln!(
             "Warning: The {} plugin was built against version {} of mdbook, \
              but we're being called from version {}",
@@ -75,7 +66,6 @@ fn handle_supports(pre: &dyn Preprocessor, sub_args: &ArgMatches) -> ! {
     let renderer = sub_args.value_of("renderer").expect("Required argument");
     let supported = pre.supports_renderer(&renderer);
 
-    // Signal whether the renderer is supported by exiting with 1 or 0.
     if supported {
         process::exit(0);
     } else {
