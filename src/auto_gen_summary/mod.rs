@@ -2,10 +2,10 @@ use mdbook::book::Book;
 use mdbook::errors::Error;
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
 use mdbook::MDBook;
+use std::fs;
 use std::io::prelude::*;
 use std::io::BufWriter;
 use std::path::Path;
-use std::fs;
 
 #[derive(Debug)]
 pub struct MdFile {
@@ -110,7 +110,9 @@ pub fn gen_summary_lines(root_dir: &str, group: &MdGroup) -> Vec<String> {
 
     if buff_spaces.len() == 0 {
         lines.push(String::from("\n"));
-        lines.push(String::from("----"));
+        if name != "Welcome" {
+            lines.push(String::from("----"));
+        }
     }
 
     lines.push(buff_link);

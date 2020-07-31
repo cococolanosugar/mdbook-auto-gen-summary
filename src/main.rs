@@ -20,7 +20,6 @@ pub fn make_app() -> App<'static, 'static> {
                 .arg(Arg::with_name("dir").required(true))
                 .about("the dir of markdown book src"),
         )
-
 }
 
 fn main() {
