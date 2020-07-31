@@ -1,4 +1,4 @@
-# mdbook-auto-gen-book-summary
+# mdbook-auto-gen-summary
 
 A preprocessor and cli tool for mdbook to auto generate summary.
 
