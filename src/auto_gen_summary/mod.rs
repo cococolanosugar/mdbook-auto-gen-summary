@@ -1,10 +1,12 @@
+use hex;
+use md5::{Digest, Md5};
 use mdbook::book::Book;
 use mdbook::errors::Error;
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
 use mdbook::MDBook;
 use std::fs;
 use std::io::prelude::*;
-use std::io::BufWriter;
+use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
 #[derive(Debug)]
@@ -76,9 +78,38 @@ pub fn gen_summary(source_dir: &String) {
     let group = walk_dir(source_dir.clone().as_str());
     let lines = gen_summary_lines(source_dir.clone().as_str(), &group);
     let buff: String = lines.join("\n");
-    let file = std::fs::File::create(source_dir.clone() + "/SUMMARY.md").unwrap();
-    let mut writer = BufWriter::new(file);
-    writer.write_all(buff.as_bytes()).unwrap();
+
+    let mut hasher = Md5::new();
+    hasher.update(buff.as_bytes());
+    let f = hasher.finalize();
+    let new_md5_vec = f.as_slice();
+    let new_md5_string = hex::encode_upper(new_md5_vec);
+
+    let mut tmp_file_path = std::env::temp_dir();
+    tmp_file_path.push("md-auto-gen-summary.tmp");
+
+    let tmp_file = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .open(tmp_file_path)
+        .unwrap();
+    let mut old_md5_string = String::new();
+    let mut tmp_file_reader = BufReader::new(tmp_file.try_clone().unwrap());
+    tmp_file_reader.read_to_string(&mut old_md5_string).unwrap();
+
+    if new_md5_string == old_md5_string {
+        return;
+    }
+
+    let summary_file = std::fs::File::create(source_dir.clone() + "/SUMMARY.md").unwrap();
+    let mut summary_file_writer = BufWriter::new(summary_file);
+    summary_file_writer.write_all(buff.as_bytes()).unwrap();
+
+    let mut tmp_file_writer = BufWriter::new(tmp_file.try_clone().unwrap());
+    tmp_file_writer
+        .write_all(new_md5_string.as_bytes())
+        .unwrap();
 }
 
 pub fn count(s: &String) -> usize {
