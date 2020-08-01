@@ -92,10 +92,10 @@ pub fn gen_summary(source_dir: &String) {
         .read(true)
         .write(true)
         .create(true)
-        .open(tmp_file_path)
+        .open(tmp_file_path.clone())
         .unwrap();
     let mut old_md5_string = String::new();
-    let mut tmp_file_reader = BufReader::new(tmp_file.try_clone().unwrap());
+    let mut tmp_file_reader = BufReader::new(tmp_file);
     tmp_file_reader.read_to_string(&mut old_md5_string).unwrap();
 
     if new_md5_string == old_md5_string {
@@ -106,7 +106,14 @@ pub fn gen_summary(source_dir: &String) {
     let mut summary_file_writer = BufWriter::new(summary_file);
     summary_file_writer.write_all(buff.as_bytes()).unwrap();
 
-    let mut tmp_file_writer = BufWriter::new(tmp_file.try_clone().unwrap());
+    let tmp_file = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .truncate(true)
+        .create(true)
+        .open(tmp_file_path.clone())
+        .unwrap();
+    let mut tmp_file_writer = BufWriter::new(tmp_file);
     tmp_file_writer
         .write_all(new_md5_string.as_bytes())
         .unwrap();
