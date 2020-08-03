@@ -9,6 +9,7 @@ documentation = "https://crates.io/crates/mdbook-auto-gen-summary"
 homepage = "https://crates.io/crates/mdbook-auto-gen-summary"
 repository = "https://github.com/knightflower1989/mdbook-auto-gen-summary"
 readme = "README.md"
+keywords = ["mdbook", "markdown", "summary"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
