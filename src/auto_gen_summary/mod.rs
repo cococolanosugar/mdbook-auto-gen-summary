@@ -8,6 +8,7 @@ use std::fs;
 use std::io::prelude::*;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
+use std::fs::DirEntry;
 
 const SUMMARY_FILE: &str = "SUMMARY.md";
 const README_FILE: &str = "README.md";
@@ -197,6 +198,29 @@ fn gen_summary_lines(root_dir: &str, group: &MdGroup, use_first_line_as_link_tex
     lines
 }
 
+fn get_title(entry: &DirEntry) -> String {
+    let md_file = std::fs::File::open(entry.path().to_str().unwrap()).unwrap();
+    let mut md_file_content = String::new();
+    let mut md_file_reader = BufReader::new(md_file);
+    md_file_reader.read_to_string(&mut md_file_content).unwrap();
+    let lines = md_file_content.split("\n");
+
+    let mut title: String = "".to_string();
+    let mut first_h1_line = "";
+    for line in lines {
+        if line.starts_with("# ") {
+            first_h1_line = line.trim_matches('#').trim();
+            break;
+        }
+    }
+
+    if first_h1_line.len() > 0 {
+        title = first_h1_line.to_string();
+    }
+
+    return title;
+}
+
 fn walk_dir(dir: &str) -> MdGroup {
     let read_dir = fs::read_dir(dir).unwrap();
     let name = Path::new(dir)
@@ -236,20 +260,7 @@ fn walk_dir(dir: &str) -> MdGroup {
             continue;
         }
 
-        let mut title = String::new();
-
-        let md_file = std::fs::File::open(entry.path().to_str().unwrap()).unwrap();
-        let mut md_file_content = String::new();
-        let mut md_file_reader = BufReader::new(md_file);
-        md_file_reader.read_to_string(&mut md_file_content).unwrap();
-        let mut lines = md_file_content.split("\n");
-        let first_line = lines.next().unwrap_or("");
-
-        let first_line = first_line.trim_matches('#').trim();
-
-        if first_line.len() > 0 {
-            title = first_line.to_string();
-        }
+        let title = get_title(&entry);
 
         let md = MdFile {
             name: file_name.to_string(),
