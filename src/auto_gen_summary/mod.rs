@@ -70,6 +70,16 @@ impl Preprocessor for AutoGenSummary {
     }
 }
 
+fn md5(buf: &String) -> String {
+    let mut hasher = Md5::new();
+    hasher.update(buf.as_bytes());
+    let f = hasher.finalize();
+    let md5_vec = f.as_slice();
+    let md5_string = hex::encode_upper(md5_vec);
+
+    return md5_string;
+}
+
 pub fn gen_summary(source_dir: &String) {
     let mut source_dir = source_dir.clone();
     if !source_dir.ends_with("/") {
@@ -79,53 +89,43 @@ pub fn gen_summary(source_dir: &String) {
     let lines = gen_summary_lines(source_dir.clone().as_str(), &group);
     let buff: String = lines.join("\n");
 
-    let mut hasher = Md5::new();
-    hasher.update(buff.as_bytes());
-    let f = hasher.finalize();
-    let new_md5_vec = f.as_slice();
-    let new_md5_string = hex::encode_upper(new_md5_vec);
+    let new_md5_string = md5(&buff);
 
-    let mut tmp_file_path = std::env::temp_dir();
-    tmp_file_path.push("md-auto-gen-summary.tmp");
-
-    let tmp_file = std::fs::OpenOptions::new()
-        .read(true)
+    let summary_file = std::fs::OpenOptions::new()
         .write(true)
+        .read(true)
         .create(true)
-        .open(tmp_file_path.clone())
+        .open(source_dir.clone() + "/SUMMARY.md")
         .unwrap();
-    let mut old_md5_string = String::new();
-    let mut tmp_file_reader = BufReader::new(tmp_file);
-    tmp_file_reader.read_to_string(&mut old_md5_string).unwrap();
+
+    let mut old_summary_file_content = String::new();
+    let mut summary_file_reader = BufReader::new(summary_file);
+    summary_file_reader.read_to_string(&mut old_summary_file_content).unwrap();
+
+    let old_md5_string = md5(&old_summary_file_content);
 
     if new_md5_string == old_md5_string {
         return;
     }
 
-    let summary_file = std::fs::File::create(source_dir.clone() + "/SUMMARY.md").unwrap();
+    let summary_file = std::fs::OpenOptions::new()
+        .write(true)
+        .read(true)
+        .create(true)
+        .truncate(true)
+        .open(source_dir.clone() + "/SUMMARY.md")
+        .unwrap();
     let mut summary_file_writer = BufWriter::new(summary_file);
     summary_file_writer.write_all(buff.as_bytes()).unwrap();
-
-    let tmp_file = std::fs::OpenOptions::new()
-        .read(true)
-        .write(true)
-        .truncate(true)
-        .create(true)
-        .open(tmp_file_path.clone())
-        .unwrap();
-    let mut tmp_file_writer = BufWriter::new(tmp_file);
-    tmp_file_writer
-        .write_all(new_md5_string.as_bytes())
-        .unwrap();
 }
 
-pub fn count(s: &String) -> usize {
+fn count(s: &String) -> usize {
     let v: Vec<&str> = s.split("/").collect();
     let cnt = v.len();
     cnt
 }
 
-pub fn gen_summary_lines(root_dir: &str, group: &MdGroup) -> Vec<String> {
+fn gen_summary_lines(root_dir: &str, group: &MdGroup) -> Vec<String> {
     let mut lines: Vec<String> = vec![];
 
     let path = group.path.replace(root_dir, "");
@@ -178,7 +178,7 @@ pub fn gen_summary_lines(root_dir: &str, group: &MdGroup) -> Vec<String> {
     lines
 }
 
-pub fn walk_dir(dir: &str) -> MdGroup {
+fn walk_dir(dir: &str) -> MdGroup {
     let read_dir = fs::read_dir(dir).unwrap();
     let name = Path::new(dir)
         .file_name()

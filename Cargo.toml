@@ -15,7 +15,7 @@ keywords = ["mdbook", "markdown", "summary"]
 
 [dependencies]
 clap = "2.33.1"
-mdbook = "0.4.1"
+mdbook = "0.4.6"
 anyhow = "1.0.32"
 serde = "1.0.114"
 serde_derive = "1.0.114"

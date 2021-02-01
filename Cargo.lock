@@ -751,9 +751,9 @@ dependencies = [
 
 [[package]]
 name = "mdbook"
-version = "0.4.1"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "406bb18cb79fb45a31df9a4dbc1d9cc51dead89202553d0290573bcc417e5902"
+checksum = "b3d948b64449003363127ed6c6139f03273982c3fe97da4cb3dee933e38ce38f"
 dependencies = [
  "ammonia",
  "anyhow",
