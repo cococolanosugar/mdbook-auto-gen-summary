@@ -14,6 +14,10 @@ It can be use in two ways:
 
 ```bash
 mdbook-auto-gen-summary gen /path/to/your/mdbook/src
+
+or
+
+mdbook-auto-gen-summary gen -t /path/to/your/mdbook/src # -t indicate mdbook to make the first line(default the file name) of markdown file as the link text in SUMMARY.md 
 ```
 
 This will walk your mdbook src dir and generate the book summary in /path/to/your/mdbook/src/SUMMARY.md
@@ -34,6 +38,7 @@ create-missing = false
 
 #use as mdbook preprocessor
 [preprocessor.auto-gen-summary]
+first-line-as-link-text = true # indicate mdbook to make the first line(default the file name) of markdown file as the link text in SUMMARY.md 
 
 [output.html.fold]
 enable = true
