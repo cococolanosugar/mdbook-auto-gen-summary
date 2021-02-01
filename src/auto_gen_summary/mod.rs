@@ -9,6 +9,9 @@ use std::io::prelude::*;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
+const SUMMARY_FILE: &str = "SUMMARY.md";
+const README_FILE: &str = "README.md";
+
 #[derive(Debug)]
 pub struct MdFile {
     pub name: String,
@@ -95,7 +98,7 @@ pub fn gen_summary(source_dir: &String) {
         .write(true)
         .read(true)
         .create(true)
-        .open(source_dir.clone() + "/SUMMARY.md")
+        .open(source_dir.clone() + "/" + SUMMARY_FILE)
         .unwrap();
 
     let mut old_summary_file_content = String::new();
@@ -113,7 +116,7 @@ pub fn gen_summary(source_dir: &String) {
         .read(true)
         .create(true)
         .truncate(true)
-        .open(source_dir.clone() + "/SUMMARY.md")
+        .open(source_dir.clone() + "/" + SUMMARY_FILE)
         .unwrap();
     let mut summary_file_writer = BufWriter::new(summary_file);
     summary_file_writer.write_all(buff.as_bytes()).unwrap();
@@ -141,9 +144,9 @@ fn gen_summary_lines(root_dir: &str, group: &MdGroup) -> Vec<String> {
     if path == "" {
         lines.push(String::from("# Summary"));
 
-        buff_link = format!("{}* [{}](README.md)", buff_spaces, name);
+        buff_link = format!("{}* [{}]({})", buff_spaces, name, README_FILE);
     } else {
-        buff_link = format!("{}* [{}]({}/README.md)", buff_spaces, name, path);
+        buff_link = format!("{}* [{}]({}/{})", buff_spaces, name, path, README_FILE);
     }
 
     if buff_spaces.len() == 0 {
@@ -157,10 +160,10 @@ fn gen_summary_lines(root_dir: &str, group: &MdGroup) -> Vec<String> {
 
     for md in &group.md_list {
         let path = md.path.replace(root_dir, "");
-        if path == "SUMMARY.md" {
+        if path == SUMMARY_FILE {
             continue;
         }
-        if path.ends_with("README.md") {
+        if path.ends_with(README_FILE) {
             continue;
         }
 
@@ -207,7 +210,7 @@ fn walk_dir(dir: &str) -> MdGroup {
         }
         let file_name = entry.file_name();
         let file_name = file_name.to_str().unwrap().to_string();
-        if file_name == "README.md" {
+        if file_name == README_FILE {
             group.has_readme = true;
         }
         let arr: Vec<&str> = file_name.split(".").collect();
