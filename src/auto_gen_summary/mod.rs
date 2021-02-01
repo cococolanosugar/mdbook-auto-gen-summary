@@ -254,6 +254,9 @@ fn walk_dir(dir: &str) -> MdGroup {
             group.has_readme = true;
         }
         let arr: Vec<&str> = file_name.split(".").collect();
+        if arr.len() < 2 {
+            continue;
+        }
         let file_name = arr[0];
         let file_ext = arr[1];
         if file_ext.to_lowercase() != "md" {
