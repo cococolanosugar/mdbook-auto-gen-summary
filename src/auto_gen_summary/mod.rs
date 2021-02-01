@@ -12,9 +12,12 @@ use std::path::Path;
 const SUMMARY_FILE: &str = "SUMMARY.md";
 const README_FILE: &str = "README.md";
 
+const FIRST_LINE_AS_LINK_TEXT: &str = "first-line-as-link-text";
+
 #[derive(Debug)]
 pub struct MdFile {
     pub name: String,
+    pub title: String,
     pub path: String,
 }
 
@@ -37,15 +40,21 @@ impl AutoGenSummary {
 
 impl Preprocessor for AutoGenSummary {
     fn name(&self) -> &str {
-        "auto-gen-summary-preprocessor"
+        "auto-gen-summary"
     }
 
     fn run(&self, ctx: &PreprocessorContext, _book: Book) -> Result<Book, Error> {
+        let mut use_first_line_as_link_text = false;
+
         // In testing we want to tell the preprocessor to blow up by setting a
         // particular config value
         if let Some(nop_cfg) = ctx.config.get_preprocessor(self.name()) {
             if nop_cfg.contains_key("blow-up") {
                 anyhow::bail!("Boom!!1!");
+            }
+            if nop_cfg.contains_key(FIRST_LINE_AS_LINK_TEXT) {
+                let v = nop_cfg.get(FIRST_LINE_AS_LINK_TEXT).unwrap();
+                use_first_line_as_link_text = v.as_bool().unwrap_or(false);
             }
         }
 
@@ -56,7 +65,7 @@ impl Preprocessor for AutoGenSummary {
             .unwrap()
             .to_string();
 
-        gen_summary(&source_dir);
+        gen_summary(&source_dir, use_first_line_as_link_text);
 
         match MDBook::load(&ctx.root) {
             Ok(mdbook) => {
@@ -83,13 +92,13 @@ fn md5(buf: &String) -> String {
     return md5_string;
 }
 
-pub fn gen_summary(source_dir: &String) {
+pub fn gen_summary(source_dir: &String, use_first_line_as_link_text: bool) {
     let mut source_dir = source_dir.clone();
     if !source_dir.ends_with("/") {
         source_dir.push_str("/")
     }
     let group = walk_dir(source_dir.clone().as_str());
-    let lines = gen_summary_lines(source_dir.clone().as_str(), &group);
+    let lines = gen_summary_lines(source_dir.clone().as_str(), &group, use_first_line_as_link_text);
     let buff: String = lines.join("\n");
 
     let new_md5_string = md5(&buff);
@@ -128,7 +137,7 @@ fn count(s: &String) -> usize {
     cnt
 }
 
-fn gen_summary_lines(root_dir: &str, group: &MdGroup) -> Vec<String> {
+fn gen_summary_lines(root_dir: &str, group: &MdGroup, use_first_line_as_link_text: bool) -> Vec<String> {
     let mut lines: Vec<String> = vec![];
 
     let path = group.path.replace(root_dir, "");
@@ -169,12 +178,19 @@ fn gen_summary_lines(root_dir: &str, group: &MdGroup) -> Vec<String> {
 
         let cnt = count(&path);
         let buff_spaces = String::from(" ".repeat(4 * (cnt - 1)));
-        let buff_link = format!("{}* [{}]({})", buff_spaces, md.name, path);
+
+        let buff_link: String;
+        if use_first_line_as_link_text && md.title.len() > 0 {
+            buff_link = format!("{}* [{}]({})", buff_spaces, md.title, path);
+        } else {
+            buff_link = format!("{}* [{}]({})", buff_spaces, md.name, path);
+        }
+
         lines.push(buff_link);
     }
 
     for group in &group.group_list {
-        let mut line = gen_summary_lines(root_dir, group);
+        let mut line = gen_summary_lines(root_dir, group, use_first_line_as_link_text);
         lines.append(&mut line);
     }
 
@@ -220,8 +236,24 @@ fn walk_dir(dir: &str) -> MdGroup {
             continue;
         }
 
+        let mut title = String::new();
+
+        let md_file = std::fs::File::open(entry.path().to_str().unwrap()).unwrap();
+        let mut md_file_content = String::new();
+        let mut md_file_reader = BufReader::new(md_file);
+        md_file_reader.read_to_string(&mut md_file_content).unwrap();
+        let mut lines = md_file_content.split("\n");
+        let first_line = lines.next().unwrap_or("");
+
+        let first_line = first_line.trim_matches('#').trim();
+
+        if first_line.len() > 0 {
+            title = first_line.to_string();
+        }
+
         let md = MdFile {
             name: file_name.to_string(),
+            title,
             path: entry.path().to_str().unwrap().to_string(),
         };
 
